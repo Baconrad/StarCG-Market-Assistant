@@ -6,9 +6,263 @@ var background = (function() {
   }
   const browser$1 = globalThis.browser?.runtime?.id ? globalThis.browser : globalThis.chrome;
   const browser = browser$1;
+  function onMessage(handler) {
+    if (typeof browser !== "undefined" && browser.runtime?.onMessage) {
+      const listener = (msg, sender, sendResponse) => {
+        (async () => {
+          try {
+            const result2 = await Promise.resolve(handler(msg, sender));
+            sendResponse(result2 || {});
+          } catch (error) {
+            const errorMsg = error instanceof Error ? error.message : String(error);
+            sendResponse({ success: false, message: errorMsg });
+          }
+        })();
+        return true;
+      };
+      browser.runtime.onMessage.addListener(listener);
+      return () => {
+        browser.runtime.onMessage.removeListener(listener);
+      };
+    }
+    if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
+      const listener = (msg, sender, sendResponse) => {
+        (async () => {
+          try {
+            const result2 = await Promise.resolve(handler(msg, sender));
+            sendResponse(result2 || {});
+          } catch (error) {
+            const errorMsg = error instanceof Error ? error.message : String(error);
+            sendResponse({ success: false, message: errorMsg });
+          }
+        })();
+        return true;
+      };
+      chrome.runtime.onMessage.addListener(listener);
+      return () => {
+        chrome.runtime.onMessage.removeListener(listener);
+      };
+    }
+    return () => {
+    };
+  }
+  async function getStorage(key) {
+    try {
+      if (typeof browser !== "undefined" && browser.storage?.local) {
+        const result2 = await browser.storage.local.get(key);
+        return result2?.[key];
+      }
+      if (typeof chrome !== "undefined" && chrome.storage?.local) {
+        return await new Promise((resolve) => {
+          chrome.storage.local.get(key, (result2) => {
+            resolve(result2?.[key]);
+          });
+        });
+      }
+      const stored = localStorage.getItem(key);
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch {
+          return void 0;
+        }
+      }
+      return void 0;
+    } catch (error) {
+      console.error(`Failed to get storage key "${key}":`, error);
+      return void 0;
+    }
+  }
+  async function setStorage(key, value) {
+    try {
+      const data = { [key]: value };
+      if (typeof browser !== "undefined" && browser.storage?.local) {
+        await browser.storage.local.set(data);
+        return;
+      }
+      if (typeof chrome !== "undefined" && chrome.storage?.local) {
+        await new Promise((resolve) => {
+          chrome.storage.local.set(data, () => {
+            resolve();
+          });
+        });
+        return;
+      }
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      console.error(`Failed to set storage key "${key}":`, error);
+      throw error;
+    }
+  }
+  const API_CONFIG = {
+    BASE_URL: "https://member.starcg.net",
+    MARKET_ENDPOINT: "/market.php",
+    // 查詢參數
+    QUERY_PARAMS: {
+      ajax: "1",
+      type: "all",
+      server: "all",
+      exact: "0"
+    }
+  };
+  const MARKET_CONFIG = {
+    DEFAULT_MAGIC_CRYSTAL_RATIO: 175,
+    DEFAULT_PAGE_SIZE: 100,
+    TIMEOUT_MS: 3e4,
+    MAX_RETRIES: 3
+  };
+  async function fetchMarketData(searchText, page = 1) {
+    const params = new URLSearchParams({
+      ...API_CONFIG.QUERY_PARAMS,
+      page: String(page),
+      search: searchText
+    });
+    const url = `${API_CONFIG.BASE_URL}${API_CONFIG.MARKET_ENDPOINT}?${params}`;
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), MARKET_CONFIG.TIMEOUT_MS);
+      const response = await fetch(url, {
+        credentials: "omit",
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const data = await response.json();
+      return normalizeApiResponse(data);
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to fetch market data: ${errorMsg}`);
+    }
+  }
+  async function fetchAllMarketPages(searchText) {
+    const stalls = [];
+    const itemsByCd = {};
+    const petsByCd = {};
+    let page = 1;
+    let totalFiltered = 0;
+    while (true) {
+      try {
+        const data = await fetchMarketData(searchText, page);
+        stalls.push(...data.stalls || []);
+        Object.assign(itemsByCd, data.itemsByCd || {});
+        Object.assign(petsByCd, data.petsByCd || {});
+        totalFiltered = data.totalFiltered || stalls.length + totalFiltered;
+        if (stalls.length >= totalFiltered) break;
+        if (!data.stalls || data.stalls.length === 0) break;
+        page += 1;
+      } catch (error) {
+        console.error(`Error fetching page ${page}:`, error);
+        if (stalls.length === 0) throw error;
+        break;
+      }
+    }
+    return { stalls, itemsByCd, petsByCd, totalFiltered };
+  }
+  function normalizeApiResponse(data) {
+    return {
+      stalls: data.stalls || data.data?.stalls || [],
+      itemsByCd: data.itemsByCd || data.data?.itemsByCd || {},
+      petsByCd: data.petsByCd || data.data?.petsByCd || {},
+      totalFiltered: data.totalFiltered ?? data.data?.totalFiltered
+    };
+  }
+  function filterMarketDataBySearch(data, searchText) {
+    if (!searchText.trim()) {
+      return data;
+    }
+    const lowerCaseSearch = searchText.toLowerCase();
+    const validCdKeys = /* @__PURE__ */ new Set();
+    for (const cdkey in data.itemsByCd) {
+      const items = data.itemsByCd[cdkey];
+      const filteredItems = items.filter(
+        (item) => (item.ITEM_TRUENAME || "").toLowerCase().includes(lowerCaseSearch)
+      );
+      if (filteredItems.length > 0) {
+        data.itemsByCd[cdkey] = filteredItems;
+        validCdKeys.add(cdkey);
+      } else {
+        delete data.itemsByCd[cdkey];
+      }
+    }
+    for (const cdkey in data.petsByCd) {
+      const pets = data.petsByCd[cdkey];
+      const filteredPets = pets.filter(
+        (pet) => (pet.Name || "").toLowerCase().includes(lowerCaseSearch)
+      );
+      if (filteredPets.length > 0) {
+        data.petsByCd[cdkey] = filteredPets;
+        validCdKeys.add(cdkey);
+      } else {
+        delete data.petsByCd[cdkey];
+      }
+    }
+    data.stalls = data.stalls.filter(
+      (stall) => validCdKeys.has(stall.cdkey ?? stall.cdKey ?? stall.cd ?? stall.CDKEY ?? "")
+    );
+    return data;
+  }
   const definition = defineBackground(() => {
-    console.log("Hello background!", { id: browser.runtime.id });
+    console.log("Background service worker loaded");
+    onMessage(async (message) => {
+      if (!message || !message.type) {
+        return { success: true };
+      }
+      try {
+        if (message.type === "fetchMarket") {
+          return await handleFetchMarket(message);
+        } else if (message.type === "addTracked") {
+          return await handleAddTracked(message);
+        } else {
+          throw new Error(`Unknown message type: ${message.type}`);
+        }
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        console.error(`Error handling message:`, errorMsg);
+        return { success: false, message: errorMsg };
+      }
+    });
   });
+  async function handleFetchMarket(message) {
+    const search = message.search || "";
+    try {
+      let data = await fetchAllMarketPages(search);
+      if (search.trim()) {
+        data = filterMarketDataBySearch(data, search);
+      }
+      return {
+        success: true,
+        stalls: data.stalls,
+        itemsByCd: data.itemsByCd,
+        petsByCd: data.petsByCd
+      };
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      return {
+        success: false,
+        message: `Failed to fetch market data: ${errorMsg}`
+      };
+    }
+  }
+  async function handleAddTracked(message) {
+    const item = message.item;
+    if (!item) {
+      return { success: false, message: "Item data is required" };
+    }
+    try {
+      const trackedItems = await getStorage("trackedItems") || [];
+      trackedItems.unshift(item);
+      await setStorage("trackedItems", trackedItems);
+      return { success: true };
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      return {
+        success: false,
+        message: `Failed to add tracked item: ${errorMsg}`
+      };
+    }
+  }
   function initPlugins() {
   }
   var _MatchPattern = class {

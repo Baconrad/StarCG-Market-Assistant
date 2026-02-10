@@ -10,6 +10,11 @@
     "96": "icon/96.png",
     "128": "icon/128.png"
   },
+  "host_permissions": [
+    "*://*.starcg.net/*",
+    "*://*.google.com/*",
+    "http://localhost/*"
+  ],
   "commands": {
     "wxt:reload-extension": {
       "description": "Reload the extension during development",
@@ -22,13 +27,9 @@
     "service_worker": "background.js"
   },
   "action": {
-    "default_title": "Default Popup Title",
+    "default_title": "StarCG 追蹤",
     "default_popup": "popup.html"
   },
-  "host_permissions": [
-    "*://*.google.com/*",
-    "http://localhost/*"
-  ],
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval' http://localhost:3000; object-src 'self';",
     "sandbox": "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:3000; sandbox allow-scripts allow-forms allow-popups allow-modals; child-src 'self';"
