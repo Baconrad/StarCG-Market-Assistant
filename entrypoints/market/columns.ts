@@ -2,7 +2,8 @@ import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import ShadBadge from '@/components/shadcn/Badge.vue'
 import ShadButton from '@/components/shadcn/Button.vue'
-import { ArrowUpDown } from 'lucide-vue-next'
+import { ArrowDown01, ArrowDown10, MapPin } from 'lucide-vue-next'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/shadcn/ui/tooltip'
 import { getTimeUntilExpiration, extractStallCoordinates, extractCdKey } from '@/utils/api'
 import type { Payment } from '@/types/market'
 import type { MarketApiResponse, MarketStall, MarketItem, MarketPet } from '@/types/messages'
@@ -20,6 +21,8 @@ export function buildRowsFromApi(apiResponse: MarketApiResponse): Payment[] {
     const server = String(stall.server ?? stall.server_name ?? '')
     const coords = extractStallCoordinates(stall)
     const startTime = String(stall.start_time ?? stall.time ?? stall.created_at ?? '')
+    const x = Number(stall.x ?? 0)
+    const y = Number(stall.y ?? 0)
 
     // 添加物品行
     if (cdKey && itemsByCd?.[cdKey]) {
@@ -32,6 +35,8 @@ export function buildRowsFromApi(apiResponse: MarketApiResponse): Payment[] {
           stallName,
           server,
           coords,
+          x,
+          y,
           startTime,
           iconId: String(item.ITEM_BASEIMAGENUMBER ?? ''),
         })
@@ -41,18 +46,18 @@ export function buildRowsFromApi(apiResponse: MarketApiResponse): Payment[] {
     // 添加寵物行
     if (cdKey && petsByCd?.[cdKey]) {
       for (const pet of petsByCd[cdKey]) {
-        const petName = String(pet.UserPetName || pet.Name || pet.petName || '')
-        const level = String(pet.Lv ?? '')
-        const name = level ? `${petName} (Lv${level})` : petName
+        const petName = String(pet.Name || pet.petName || '')
 
         out.push({
           type: 'pet',
-          name,
+          name: petName,
           price: Number(pet.price ?? 0),
           priceType: String(pet.pricetype ?? '0') as '0' | '1',
           stallName,
           server,
           coords,
+          x,
+          y,
           startTime,
           iconId: String(pet.Basebaseimgnum ?? ''),
         })
@@ -66,7 +71,10 @@ export function buildRowsFromApi(apiResponse: MarketApiResponse): Payment[] {
 /**
  * 表格列定義
  */
-export const columns = (addTracked: (payment: Payment) => void): ColumnDef<Payment>[] => [
+export const columns = (
+  addTracked: (payment: Payment) => void,
+  onShowMap?: (x: number, y: number) => void
+): ColumnDef<Payment>[] => [
   {
     accessorKey: 'type',
     header: '類型',
@@ -74,7 +82,9 @@ export const columns = (addTracked: (payment: Payment) => void): ColumnDef<Payme
       const type = row.getValue('type') as string
       const variant = type === 'item' ? 'secondary' : 'default'
       const text = type === 'item' ? '道具' : '寵物'
-      return h(ShadBadge, { variant }, () => text)
+      return h('div', { class: 'flex justify-center' }, [
+        h(ShadBadge, { variant }, () => text)
+      ])
     },
   },
   {
@@ -98,19 +108,24 @@ export const columns = (addTracked: (payment: Payment) => void): ColumnDef<Payme
     accessorFn: (row) => Number((row as any).sortablePrice || row.price),
     id: 'sortablePrice',
     header: ({ column }) => {
+      const sorted = column.getIsSorted()
       return h(
         ShadButton,
         {
           variant: 'ghost',
           onClick: (e: Event) => {
             e.stopPropagation();
-            column.toggleSorting(column.getIsSorted() === 'asc');
+            column.toggleSorting(sorted === 'asc');
           },
         },
         () =>
           h('span', { class: 'flex items-center' }, [
             '價格',
-            h(ArrowUpDown, { class: 'ml-2 h-4 w-4' }),
+            sorted === 'asc' 
+              ? h(ArrowDown01, { class: 'ml-2 h-4 w-4' })
+              : sorted === 'desc'
+                ? h(ArrowDown10, { class: 'ml-2 h-4 w-4' })
+                : h(ArrowDown01, { class: 'ml-2 h-4 w-4 opacity-50' }),
           ])
       )
     },
@@ -124,18 +139,44 @@ export const columns = (addTracked: (payment: Payment) => void): ColumnDef<Payme
     accessorKey: 'priceType',
     header: '單位',
     cell: ({ row }) => {
-      return row.getValue('priceType') === '1' ? '魔晶' : '金幣'
+      return h('div', { class: 'text-center' }, row.getValue('priceType') === '1' ? '魔晶' : '金幣')
     },
   },
   {
     accessorKey: 'stallName',
     header: '攤位名稱',
+    cell: ({ row }) => {
+      return h('div', { class: 'text-center' }, row.getValue('stallName') as string)
+    },
   },
   {
-    accessorKey: 'server',
+    id: 'serverCoords',
     header: '伺服器/座標',
     cell: ({ row }) => {
-      return `${row.original.server} / ${row.original.coords}`
+      const server = row.original.server
+      const coords = row.original.coords
+      const x = row.original.x
+      const y = row.original.y
+
+      return h('div', { class: 'text-center' }, [
+        h('span', { class: 'text-sm text-[#2b160e]' }, server),
+        h('span', { class: 'mx-1 text-[#d6b089]' }, '/'),
+        h(
+          ShadButton,
+          {
+            variant: 'outline',
+            size: 'sm',
+            class: 'h-6 px-2 text-xs border-[#d6b089] text-[#2b160e] hover:bg-[#d6b089] hover:text-[#2b160e]',
+            onClick: () => {
+              onShowMap?.(x, y)
+            },
+          },
+          () => h('span', { class: 'flex items-center gap-1' }, [
+            h(MapPin, { class: 'h-3 w-3' }),
+            coords,
+          ])
+        ),
+      ])
     },
   },
   {
@@ -143,22 +184,45 @@ export const columns = (addTracked: (payment: Payment) => void): ColumnDef<Payme
     header: '攤位到期時間',
     cell: ({ row }) => {
       const timestamp = row.getValue('startTime') as string
-      return getTimeUntilExpiration(timestamp)
+      const timeText = getTimeUntilExpiration(timestamp)
+      const fullDate = timestamp 
+        ? new Date(Number(timestamp) * 1000).toLocaleString('zh-TW', { 
+            year: 'numeric', 
+            month: '2-digit', 
+            day: '2-digit', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            second: '2-digit',
+            hour12: false 
+          }).replace(/\//g, '-')
+        : ''
+      
+      return h('div', { class: 'flex justify-center' }, [
+        h(TooltipProvider, {}, () =>
+          h(Tooltip, {}, () => [
+            h(TooltipTrigger, { class: 'cursor-pointer' }, () => timeText),
+            h(TooltipContent, {}, () => fullDate),
+          ])
+        )
+      ])
     },
   },
   {
     id: 'actions',
+    header: '操作',
     cell: ({ row }) => {
       const payment = row.original
-      return h(
-        ShadButton,
-        {
-          size: 'sm',
-          variant: 'secondary',
-          onClick: () => addTracked(payment),
-        },
-        () => '追蹤'
-      )
+      return h('div', { class: 'text-center' }, [
+        h(
+          ShadButton,
+          {
+            size: 'sm',
+            variant: 'secondary',
+            onClick: () => addTracked(payment),
+          },
+          () => '追蹤'
+        ),
+      ])
     },
   },
 ]

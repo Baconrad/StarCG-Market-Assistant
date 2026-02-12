@@ -13,6 +13,8 @@ export interface Payment {
   stallName: string;
   server: string;
   coords: string;
+  x: number;
+  y: number;
   startTime: string;
   iconId: string;
   sortablePrice?: number;

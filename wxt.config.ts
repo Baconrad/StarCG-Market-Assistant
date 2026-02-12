@@ -9,5 +9,6 @@ export default defineConfig({
   }),  
   manifest: {
     host_permissions: ['*://*.starcg.net/*'],
+    permissions: ['storage'],
   },
 });

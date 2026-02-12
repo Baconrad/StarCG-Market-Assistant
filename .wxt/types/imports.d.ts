@@ -9,6 +9,8 @@ declare global {
   const MARKET_CONFIG: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/constants').MARKET_CONFIG
   const MatchPattern: typeof import('wxt/utils/match-patterns').MatchPattern
   const SUCCESS_MESSAGES: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/constants').SUCCESS_MESSAGES
+  const bountyEquipment: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/bountyData').bountyEquipment
+  const bountyPets: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/bountyData').bountyPets
   const browser: typeof import('wxt/browser').browser
   const clearStorage: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/storage').clearStorage
   const computed: typeof import('vue').computed
@@ -30,6 +32,7 @@ declare global {
   const fakeBrowser: typeof import('wxt/testing').fakeBrowser
   const fetchAllMarketPages: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/api').fetchAllMarketPages
   const fetchMarketData: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/api').fetchMarketData
+  const fetchMarketHistory: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/api').fetchMarketHistory
   const filterMarketDataBySearch: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/api').filterMarketDataBySearch
   const getCurrentInstance: typeof import('vue').getCurrentInstance
   const getCurrentScope: typeof import('vue').getCurrentScope
@@ -37,6 +40,7 @@ declare global {
   const getExtensionUrl: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/messaging').getExtensionUrl
   const getStorage: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/storage').getStorage
   const getTimeUntilExpiration: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/api').getTimeUntilExpiration
+  const groupBountyEquipmentByCategory: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/bountyData').groupBountyEquipmentByCategory
   const h: typeof import('vue').h
   const inject: typeof import('vue').inject
   const injectScript: typeof import('wxt/utils/inject-script').injectScript
@@ -125,6 +129,9 @@ declare global {
   // @ts-ignore
   export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, ShallowRef, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
+  // @ts-ignore
+  export type { BountyItem } from 'C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/bountyData'
+  import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/bountyData')
 }
 // for vue template auto import
 import { UnwrapRef } from 'vue'
@@ -138,6 +145,8 @@ declare module 'vue' {
     readonly MARKET_CONFIG: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/constants')['MARKET_CONFIG']>
     readonly MatchPattern: UnwrapRef<typeof import('wxt/utils/match-patterns')['MatchPattern']>
     readonly SUCCESS_MESSAGES: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/constants')['SUCCESS_MESSAGES']>
+    readonly bountyEquipment: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/bountyData')['bountyEquipment']>
+    readonly bountyPets: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/bountyData')['bountyPets']>
     readonly browser: UnwrapRef<typeof import('wxt/browser')['browser']>
     readonly clearStorage: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/storage')['clearStorage']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
@@ -159,6 +168,7 @@ declare module 'vue' {
     readonly fakeBrowser: UnwrapRef<typeof import('wxt/testing')['fakeBrowser']>
     readonly fetchAllMarketPages: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/api')['fetchAllMarketPages']>
     readonly fetchMarketData: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/api')['fetchMarketData']>
+    readonly fetchMarketHistory: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/api')['fetchMarketHistory']>
     readonly filterMarketDataBySearch: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/api')['filterMarketDataBySearch']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
@@ -166,6 +176,7 @@ declare module 'vue' {
     readonly getExtensionUrl: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/messaging')['getExtensionUrl']>
     readonly getStorage: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/storage')['getStorage']>
     readonly getTimeUntilExpiration: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/api')['getTimeUntilExpiration']>
+    readonly groupBountyEquipmentByCategory: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/utils/bountyData')['groupBountyEquipmentByCategory']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly injectScript: UnwrapRef<typeof import('wxt/utils/inject-script')['injectScript']>

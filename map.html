@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>地圖座標精確調校工具</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f0f0; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        canvas { border: 1px solid #333; cursor: crosshair; margin-top: 10px; max-width: 100%; height: auto; }
+        .info { background: #e9ecef; padding: 10px; border-radius: 4px; margin-bottom: 10px; line-height: 1.6; }
+        .controls { margin-bottom: 15px; display: flex; gap: 10px; align-items: center; }
+        input { width: 80px; padding: 5px; }
+        button { padding: 5px 15px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #0056b3; }
+        #log { color: #d9534f; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>地圖座標調校系統 (軸向修正版)</h2>
+    
+    <div class="info">
+        <strong>修正說明：</strong><br>
+        根據您的反饋，修正了遊戲 X 軸的向量方向。當 X 減少時，點位現在會往左下移動。基準點 (248, 88) 保持精確命中。
+    </div>
+
+    <div class="controls">
+        遊戲 X: <input type="number" id="posX" value="248">
+        遊戲 Y: <input type="number" id="posY" value="88">
+        <button onclick="drawMarker()">標示座標</button>
+        <span id="log"></span>
+    </div>
+
+    <canvas id="mapCanvas"></canvas>
+</div>
+
+<script>
+const canvas = document.getElementById('mapCanvas');
+const ctx = canvas.getContext('2d');
+const logSpan = document.getElementById('log');
+const img = new Image();
+
+img.src = 'map.jpg'; 
+
+img.onload = function() {
+    canvas.width = img.width;
+    canvas.height = img.height;
+    drawMarker();
+};
+
+canvas.addEventListener('click', function(event) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const px = (event.clientX - rect.left) * scaleX;
+    const py = (event.clientY - rect.top) * scaleY;
+    const output = `點擊像素座標: px=${px.toFixed(1)}, py=${py.toFixed(1)}`;
+    console.log(output);
+    logSpan.innerText = output;
+    drawMarker();
+    ctx.beginPath();
+    ctx.arc(px, py, 5, 0, Math.PI * 2);
+    ctx.fillStyle = 'blue';
+    ctx.fill();
+});
+
+/**
+ * 重新計算的轉換公式
+ * 修正軸向：
+ * 遊戲 X 增加 -> 往右上 (px+, py-)
+ * 遊戲 Y 增加 -> 往右下 (px+, py+)
+ */
+function gameToPixel(gx, gy) {
+    // 使用您的第一組精確數據作為絕對錨點
+    const refGX = 248;
+    const refGY = 88;
+    const refPX = 710.9;
+    const refPY = 133.1;
+
+    const dgX = gx - refGX;
+    const dgY = gy - refGY;
+
+    /**
+     * 修正後的 X 軸向量：
+     * 之前數據顯示 X 從 248 變到 62 (減少 186) 像素從 710.9 變到 222.0 (減少 488.9)
+     * 所以 X 每減少 1，px 應該減少 2.6285，py 應該增加 1.9188 (往左下)
+     * 反之，X 每增加 1，px 增加 2.6285，py 減少 1.9188 (往右上)
+     */
+    const ux_px = 2.6285; 
+    const ux_py = -1.9188;
+
+    /**
+     * 根據 Isometric 2:1 比例與對稱性推導 Y 軸向量
+     * Y 軸增加方向通常往右下 (px 增加, py 增加)
+     */
+    const uy_px = 2.6285;
+    const uy_py = 1.9188;
+
+    const px = refPX + (dgX * ux_px) + (dgY * uy_px);
+    const py = refPY + (dgX * ux_py) + (dgY * uy_py);
+
+    return { x: px, y: py };
+}
+
+function drawMarker() {
+    if (!img.complete) return;
+    const gx = parseFloat(document.getElementById('posX').value);
+    const gy = parseFloat(document.getElementById('posY').value);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0);
+    const pos = gameToPixel(gx, gy);
+    
+    // 繪製紅點
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, 8, 0, Math.PI * 2);
+    ctx.fillStyle = 'red';
+    ctx.fill();
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // 顯示資訊
+    ctx.fillStyle = 'white';
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 4;
+    ctx.font = 'bold 24px Arial';
+    ctx.strokeText(`Game: ${gx}, ${gy}`, pos.x + 15, pos.y + 5);
+    ctx.fillText(`Game: ${gx}, ${gy}`, pos.x + 15, pos.y + 5);
+    
+    // 輸出到 Console 驗證
+    // console.log(`標註座標: ${gx}, ${gy} -> px: ${pos.x.toFixed(1)}, py: ${pos.y.toFixed(1)}`);
+}
+</script>
+</body>
+</html>

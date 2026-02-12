@@ -12,6 +12,7 @@ declare module "wxt/browser" {
     | "/icon/32.png"
     | "/icon/48.png"
     | "/icon/96.png"
+    | "/map.png"
     | "/market.html"
     | "/popup.html"
     | "/wxt.svg"

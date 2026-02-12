@@ -55,10 +55,40 @@ export interface MarketPet {
 // 追蹤項目類型
 export interface TrackedItem {
   name: string;
-  price: number;
-  stall: string;
-  priceType: string;
+  type: 'item' | 'pet';
   addedAt: number;
+  minPrice?: number;
+  avgPrice?: number;
+  lastUpdated?: number;
+  historyData?: MarketHistoryRecord[];
+}
+
+export interface MarketHistoryRecord {
+  id: number;
+  price: number;
+  priceType: '0' | '1';
+  time: number;
+  timeText: string;
+  buff: string;
+  buyerName: string;
+}
+
+export interface MarketHistoryResponse {
+  page: number;
+  perPage: number;
+  totalFiltered: number;
+  logs: {
+    id: number;
+    cdkey: string;
+    buycdkey: string;
+    buyname: string;
+    buff: string;
+    price: number;
+    pricetype: number;
+    time: number;
+    check: number;
+    time_text: string;
+  }[];
 }
 
 // === 消息定義 ===

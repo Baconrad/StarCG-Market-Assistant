@@ -7,7 +7,7 @@ defineProps<{
 <template>
   <component 
     :is="isHeader ? 'th' : 'td'"
-    class="p-3 text-left text-sm"
+    :class="isHeader ? 'p-3 text-center text-sm' : 'p-3 text-left text-sm'"
   >
     <slot />
   </component>

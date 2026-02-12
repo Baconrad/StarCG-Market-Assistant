@@ -8,6 +8,8 @@ import type {
   MarketStall,
   MarketItem,
   MarketPet,
+  MarketHistoryResponse,
+  MarketHistoryRecord,
 } from '@/types/messages';
 import { API_CONFIG, MARKET_CONFIG } from './constants';
 
@@ -187,4 +189,68 @@ export function getTimeUntilExpiration(timestamp: string): string {
 
   const minutes = Math.floor(diff / (1000 * 60));
   return `剩 ${minutes} 分鐘`;
+}
+
+/**
+ * 獲取歷史成交記錄
+ * @param search 搜尋關鍵字
+ * @param type 類型: all | pet | item
+ * @param maxPages 最大頁數（預設3頁）
+ */
+export async function fetchMarketHistory(
+  search: string,
+  type: 'all' | 'pet' | 'item' = 'all',
+  maxPages: number = 3
+): Promise<MarketHistoryRecord[]> {
+  const allRecords: MarketHistoryRecord[] = [];
+
+  for (let page = 1; page <= maxPages; page++) {
+    try {
+      const url = `https://member.starcg.net/marketrecord.php?ajax=1&page=${page}&search=${encodeURIComponent(search)}&type=${type}`;
+
+      const response = await fetch(url, {
+        credentials: 'omit',
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data: MarketHistoryResponse = await response.json();
+
+      if (!data.logs || data.logs.length === 0) {
+        break;
+      }
+
+      // 過濾符合條件的記錄（buff 必須完全匹配）
+      const filteredLogs = data.logs.filter((log) => {
+        // 預期的 buff 格式: "購買1隻：{search}" 或 "購買1個：{search}"
+        const expectedBuffPet = `購買1隻：${search}`;
+        const expectedBuffItem = `購買1個：${search}`;
+        return log.buff === expectedBuffPet || log.buff === expectedBuffItem;
+      });
+
+      const records: MarketHistoryRecord[] = filteredLogs.map((log) => ({
+        id: log.id,
+        price: log.price,
+        priceType: String(log.pricetype) as '0' | '1',
+        time: log.time,
+        timeText: log.time_text,
+        buff: log.buff,
+        buyerName: log.buyname,
+      }));
+
+      allRecords.push(...records);
+
+      // 如果已經沒有更多數據，提前退出
+      if (data.logs.length < data.perPage) {
+        break;
+      }
+    } catch (error) {
+      console.error(`Error fetching history page ${page}:`, error);
+      break;
+    }
+  }
+
+  return allRecords;
 }
