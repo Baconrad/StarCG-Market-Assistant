@@ -1,0 +1,45 @@
+name: Deploy Web to GitHub Pages
+
+on:
+  push:
+    branches: [ main ] # 當 main 分支有 push 時觸發
+  workflow_dispatch:   # 允許手動觸發
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: |
+          cd web
+          npm install  # 如果你用 pnpm，請改為 pnpm install
+
+      - name: Build Web Project
+        run: |
+          cd web
+          npm run build # 確保你的 Vue 專案編譯結果是在 web/dist
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './web/dist' # 指向 Vue 編譯後的資料夾
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
