@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #8b4f2b;
+  --color-secondary: #d6b089;
+  --color-bg-light: #f8eee7;
+  --color-bg-gradient-start: #f3e7de;
+  --color-bg-gradient-end: #f8eee7;
+  --color-card-bg: #e8d5c4;
+  --color-text-dark: #2b160e;
+  --color-text-light: #3b2b22;
+}
+
+body {
+  background: linear-gradient(to bottom, #f3e7de, #f8eee7);
+  min-height: 100vh;
+}

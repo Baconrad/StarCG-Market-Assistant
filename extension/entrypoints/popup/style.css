@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 重置基本樣式 */
+html, body {
+  margin: 0;
+  padding: 0;
+  min-width: 360px;
+  min-height: 480px;
+  background-color: #f3e7de;
+}
+
+#app {
+  width: 360px;
+  min-height: 480px;
+}
