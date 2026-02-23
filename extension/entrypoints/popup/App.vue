@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { getStorage } from '@/utils/storage'
 import type { TrackedItem } from '@/types/messages'
 import ShadButton from '@/components/shadcn/Button.vue'
@@ -7,6 +7,18 @@ import ShadButton from '@/components/shadcn/Button.vue'
 const WEB_URL = 'https://baconrad.github.io/StarCG-Market-Extension/'
 const trackedItems = ref<TrackedItem[]>([])
 const loading = ref(true)
+
+// 依 lastUpdated 降序排列（最近更新的在前面）
+const sortedItems = computed(() => {
+  return [...trackedItems.value].sort((a, b) => {
+    return (b.lastUpdated || 0) - (a.lastUpdated || 0)
+  })
+})
+
+// 顯示最近更新的 5 筆
+const displayItems = computed(() => {
+  return sortedItems.value.slice(0, 5)
+})
 
 onMounted(async () => {
   try {
@@ -92,7 +104,7 @@ function formatPrice(price: number | undefined) {
         <!-- 追蹤清單列表 -->
         <div v-else class="flex-1 overflow-y-auto space-y-2 pr-1 -mr-1 scrollbar-thin">
           <div
-            v-for="item in trackedItems.slice(0, 5)"
+            v-for="item in displayItems"
             :key="item.name"
             class="bg-bg-light rounded-lg p-3 border border-border-light hover:border-primary transition-colors"
           >

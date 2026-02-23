@@ -22,5 +22,5 @@ declare module '#imports' {
   export { bountyEquipment, bountyPets, groupBountyEquipmentByCategory, BountyItem } from '../utils/bountyData';
   export { API_CONFIG, MARKET_CONFIG, ERROR_MESSAGES, SUCCESS_MESSAGES } from '../utils/constants';
   export { sendMessage, onMessage, getExtensionUrl } from '../utils/messaging';
-  export { getStorage, setStorage, removeStorage, clearStorage } from '../utils/storage';
+  export { getStorage, setStorage, removeStorage, clearStorage, getSettings, setSettings, updateSetting } from '../utils/storage';
 }

@@ -137,3 +137,39 @@ export async function clearStorage(): Promise<void> {
     throw error;
   }
 }
+
+// ========== Settings 便捷函數 ==========
+
+import type { AppSettings } from '@/types/storage';
+import { STORAGE_DEFAULTS } from '@/types/storage';
+
+/**
+ * 獲取應用設定
+ */
+export async function getSettings(): Promise<AppSettings> {
+  const settings = await getStorage('settings');
+  return {
+    ...STORAGE_DEFAULTS.settings,
+    ...settings,
+  };
+}
+
+/**
+ * 設置應用設定
+ */
+export async function setSettings(settings: Partial<AppSettings>): Promise<void> {
+  const current = await getSettings();
+  await setStorage('settings', { ...current, ...settings });
+}
+
+/**
+ * 更新單一設定值
+ */
+export async function updateSetting<K extends keyof AppSettings>(
+  key: K,
+  value: AppSettings[K]
+): Promise<void> {
+  const settings = await getSettings();
+  settings[key] = value;
+  await setStorage('settings', settings);
+}

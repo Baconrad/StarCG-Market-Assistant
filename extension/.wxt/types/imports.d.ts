@@ -38,6 +38,7 @@ declare global {
   const getCurrentScope: typeof import('vue').getCurrentScope
   const getCurrentWatcher: typeof import('vue').getCurrentWatcher
   const getExtensionUrl: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/messaging').getExtensionUrl
+  const getSettings: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/storage').getSettings
   const getStorage: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/storage').getStorage
   const getTimeUntilExpiration: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/api').getTimeUntilExpiration
   const groupBountyEquipmentByCategory: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/bountyData').groupBountyEquipmentByCategory
@@ -73,6 +74,7 @@ declare global {
   const removeStorage: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/storage').removeStorage
   const resolveComponent: typeof import('vue').resolveComponent
   const sendMessage: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/messaging').sendMessage
+  const setSettings: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/storage').setSettings
   const setStorage: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/storage').setStorage
   const shallowReactive: typeof import('vue').shallowReactive
   const shallowReadonly: typeof import('vue').shallowReadonly
@@ -84,6 +86,7 @@ declare global {
   const toValue: typeof import('vue').toValue
   const triggerRef: typeof import('vue').triggerRef
   const unref: typeof import('vue').unref
+  const updateSetting: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/storage').updateSetting
   const useAppConfig: typeof import('wxt/utils/app-config').useAppConfig
   const useAttrs: typeof import('vue').useAttrs
   const useCssModule: typeof import('vue').useCssModule
@@ -174,6 +177,7 @@ declare module 'vue' {
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
     readonly getCurrentWatcher: UnwrapRef<typeof import('vue')['getCurrentWatcher']>
     readonly getExtensionUrl: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/messaging')['getExtensionUrl']>
+    readonly getSettings: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/storage')['getSettings']>
     readonly getStorage: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/storage')['getStorage']>
     readonly getTimeUntilExpiration: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/api')['getTimeUntilExpiration']>
     readonly groupBountyEquipmentByCategory: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/bountyData')['groupBountyEquipmentByCategory']>
@@ -209,6 +213,7 @@ declare module 'vue' {
     readonly removeStorage: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/storage')['removeStorage']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
     readonly sendMessage: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/messaging')['sendMessage']>
+    readonly setSettings: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/storage')['setSettings']>
     readonly setStorage: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/storage')['setStorage']>
     readonly shallowReactive: UnwrapRef<typeof import('vue')['shallowReactive']>
     readonly shallowReadonly: UnwrapRef<typeof import('vue')['shallowReadonly']>
@@ -220,6 +225,7 @@ declare module 'vue' {
     readonly toValue: UnwrapRef<typeof import('vue')['toValue']>
     readonly triggerRef: UnwrapRef<typeof import('vue')['triggerRef']>
     readonly unref: UnwrapRef<typeof import('vue')['unref']>
+    readonly updateSetting: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/storage')['updateSetting']>
     readonly useAppConfig: UnwrapRef<typeof import('wxt/utils/app-config')['useAppConfig']>
     readonly useAttrs: UnwrapRef<typeof import('vue')['useAttrs']>
     readonly useCssModule: UnwrapRef<typeof import('vue')['useCssModule']>

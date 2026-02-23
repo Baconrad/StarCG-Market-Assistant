@@ -1,8 +1,9 @@
 import { onMessage } from '@/utils/messaging';
-import { getStorage, setStorage } from '@/utils/storage';
+import { getStorage, setStorage, getSettings, setSettings } from '@/utils/storage';
 import {
   fetchAllMarketPages,
   filterMarketDataBySearch,
+  fetchMarketHistory,
 } from '@/utils/api';
 import type {
   FetchMarketMessage,
@@ -11,10 +12,24 @@ import type {
   AddTrackedResponse,
   AnyMessage,
   MessageResponse,
+  TrackedItem,
 } from '@/types/messages';
+
+// ========== 常量定義 ==========
+
+const ALARM_NAME = 'priceUpdate';
+const WEB_URL = 'https://baconrad.github.io/StarCG-Market-Extension/';
+
+// ========== Background Entry Point ==========
 
 export default defineBackground(() => {
   console.log('Background service worker loaded');
+
+  // 初始化 alarm
+  initAlarm();
+
+  // 初始化通知點擊處理
+  initNotificationHandler();
 
   // 監聽來自外部的消息（網頁端檢查擴充功能是否安裝 + API 代理請求）
   chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => {
@@ -63,6 +78,25 @@ export default defineBackground(() => {
       handleUpdateTrackedProxy(request.data, sendResponse);
       return true;
     }
+
+    // 處理取得設定
+    if (request.type === 'GET_SETTINGS') {
+      handleGetSettingsProxy(sendResponse);
+      return true;
+    }
+
+    // 處理更新設定
+    if (request.type === 'UPDATE_SETTINGS') {
+      handleUpdateSettingsProxy(request.data, sendResponse);
+      return true;
+    }
+
+    // 處理通知測試
+    if (request.type === 'TEST_NOTIFICATION') {
+      sendTestNotification();
+      sendResponse({ success: true });
+      return true;
+    }
     
     return false;
   });
@@ -70,20 +104,54 @@ export default defineBackground(() => {
   // 初始化 API 模組
   initApiModule();
 
-  // 註冊消息監聽
+  // 監聽來自內部的消息（options page 等）
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    // 處理取得設定
+    if (request.type === 'GET_SETTINGS') {
+      handleGetSettingsProxy(sendResponse);
+      return true;
+    }
+
+    // 處理更新設定
+    if (request.type === 'UPDATE_SETTINGS') {
+      handleUpdateSettingsProxy(request.data, sendResponse);
+      return true;
+    }
+
+    // 處理通知測試
+    if (request.type === 'TEST_NOTIFICATION') {
+      sendTestNotification();
+      sendResponse({ success: true });
+      return true;
+    }
+
+    return false;
+  });
+
+  // 註冊消息監聽（用於 WXT 內部通訊）
   onMessage(async (message: AnyMessage): Promise<MessageResponse | void> => {
     if (!message || !message.type) {
       return { success: true };
     }
 
+    const messageType = (message as any).type;
+
+    // 忽略已由 chrome.runtime.onMessage 處理的訊息類型
+    const handledTypes = ['GET_SETTINGS', 'UPDATE_SETTINGS', 'TEST_NOTIFICATION'];
+    if (handledTypes.includes(messageType)) {
+      return { success: true };
+    }
+
     try {
       // 使用 switch 語句處理不同的消息類型
-      if ((message as any).type === 'fetchMarket') {
+      if (messageType === 'fetchMarket') {
         return await handleFetchMarket(message as FetchMarketMessage);
-      } else if ((message as any).type === 'addTracked') {
+      } else if (messageType === 'addTracked') {
         return await handleAddTracked(message as AddTrackedMessage);
       } else {
-        throw new Error(`Unknown message type: ${(message as any).type}`);
+        // 不再拋出錯誤，只記錄並返回成功
+        console.log(`Unhandled message type: ${messageType}`);
+        return { success: true };
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
@@ -92,6 +160,180 @@ export default defineBackground(() => {
     }
   });
 });
+
+// ========== Alarm 相關函數 ==========
+
+/**
+ * 初始化 alarm
+ */
+function initAlarm() {
+  // 創建每 1 分鐘觸發的 alarm
+  chrome.alarms.create(ALARM_NAME, { periodInMinutes: 1 });
+
+  // 監聽 alarm
+  chrome.alarms.onAlarm.addListener(async (alarm) => {
+    if (alarm.name === ALARM_NAME) {
+      await checkAndUpdatePrices();
+    }
+  });
+
+  console.log('Price update alarm initialized');
+}
+
+/**
+ * 檢查並更新價格
+ * 每 1 分鐘檢查一次，只更新一個商品
+ */
+async function checkAndUpdatePrices() {
+  try {
+    // 1. 檢查是否開啟自動更新
+    const settings = await getSettings();
+    if (!settings.autoUpdateEnabled) {
+      return;
+    }
+
+    // 2. 取得追蹤清單
+    const trackedItems = (await getStorage('trackedItems')) || [];
+    if (trackedItems.length === 0) {
+      return;
+    }
+
+    const now = Date.now();
+    const intervalMs = settings.updateInterval * 60 * 1000; // 轉毫秒
+
+    // 3. 找出需要更新的商品（按 lastUpdated 排序，最舊的優先）
+    const needsUpdate = trackedItems
+      .filter((item: TrackedItem) => {
+        if (!item.lastUpdated) return true;
+        return (now - item.lastUpdated) >= intervalMs;
+      })
+      .sort((a: TrackedItem, b: TrackedItem) => {
+        return (a.lastUpdated || 0) - (b.lastUpdated || 0);
+      });
+
+    if (needsUpdate.length === 0) {
+      return;
+    }
+
+    // 4. 只更新第一個商品
+    const itemToUpdate = needsUpdate[0];
+    console.log(`Updating price for: ${itemToUpdate.name}`);
+    await updateSingleItemPrice(itemToUpdate, trackedItems, settings.notifyEnabled);
+
+  } catch (error) {
+    console.error('Error in checkAndUpdatePrices:', error);
+  }
+}
+
+/**
+ * 更新單一商品的價格
+ */
+async function updateSingleItemPrice(
+  item: TrackedItem,
+  trackedItems: TrackedItem[],
+  notifyEnabled: boolean
+) {
+  try {
+    // 呼叫 API 取得歷史成交價
+    const historyType = item.type === 'pet' ? 'pet' : 'item';
+    const history = await fetchMarketHistory(item.name, historyType, 3);
+
+    if (!history || history.length === 0) {
+      // 沒有歷史資料，只更新時間
+      const index = trackedItems.findIndex((i) => i.name === item.name);
+      if (index !== -1) {
+        trackedItems[index] = {
+          ...trackedItems[index],
+          lastUpdated: Date.now(),
+        };
+        await setStorage('trackedItems', trackedItems);
+      }
+      return;
+    }
+
+    // 計算新的最低價和平均價
+    const prices = history.map((h) => h.price);
+    const newMinPrice = Math.min(...prices);
+    const newAvgPrice = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);
+    const oldMinPrice = item.minPrice;
+
+    // 更新 storage
+    const index = trackedItems.findIndex((i) => i.name === item.name);
+    if (index !== -1) {
+      trackedItems[index] = {
+        ...trackedItems[index],
+        minPrice: newMinPrice,
+        avgPrice: newAvgPrice,
+        lastUpdated: Date.now(),
+        historyData: history,
+      };
+      await setStorage('trackedItems', trackedItems);
+    }
+
+    // 檢查是否需要通知（新價格 < 舊價格）
+    if (notifyEnabled && oldMinPrice !== undefined && newMinPrice < oldMinPrice) {
+      sendPriceDropNotification(item, oldMinPrice, newMinPrice);
+    }
+
+    console.log(`Updated ${item.name}: minPrice ${oldMinPrice} -> ${newMinPrice}`);
+
+  } catch (error) {
+    console.error(`Error updating price for ${item.name}:`, error);
+  }
+}
+
+// ========== 通知相關函數 ==========
+
+/**
+ * 初始化通知點擊處理
+ */
+function initNotificationHandler() {
+  chrome.notifications.onClicked.addListener((notificationId) => {
+    // 點擊通知後開啟追蹤清單頁面
+    chrome.tabs.create({ url: `${WEB_URL}tracked` });
+    chrome.notifications.clear(notificationId);
+  });
+}
+
+/**
+ * 發送價格下降通知
+ */
+function sendPriceDropNotification(
+  item: TrackedItem,
+  oldPrice: number,
+  newPrice: number
+) {
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-US').format(price);
+  };
+
+  chrome.notifications.create({
+    type: 'basic',
+    iconUrl: '/logo.png',
+    title: `💰 ${item.name} 價格下降！`,
+    message: `最低價從 ${formatPrice(oldPrice)} 降至 ${formatPrice(newPrice)}`,
+    priority: 2,
+  });
+
+  console.log(`Notification sent for ${item.name}: ${oldPrice} -> ${newPrice}`);
+}
+
+/**
+ * 發送測試通知
+ */
+function sendTestNotification() {
+  chrome.notifications.create({
+    type: 'basic',
+    iconUrl: '/logo.png',
+    title: '📢 測試通知',
+    message: '這是一則測試通知，通知功能運作正常！',
+    priority: 1,
+  });
+
+  console.log('Test notification sent');
+}
+
+// ========== 原有的處理函數 ==========
 
 /**
  * 處理市場搜尋請求
@@ -158,8 +400,6 @@ async function handleAddTracked(
 }
 
 // ========== API 代理處理函數 ==========
-
-import { fetchMarketData, fetchMarketHistory } from '@/utils/api';
 
 /**
  * 處理單頁市場數據請求（代理）
@@ -297,3 +537,38 @@ async function handleUpdateTrackedProxy(
   }
 }
 
+// ========== 設定代理處理函數 ==========
+
+import type { AppSettings } from '@/types/storage';
+
+/**
+ * 處理取得設定（代理）
+ */
+async function handleGetSettingsProxy(
+  sendResponse: (response: any) => void
+) {
+  try {
+    const settings = await getSettings();
+    sendResponse({ success: true, data: settings });
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    sendResponse({ success: false, message: errorMsg });
+  }
+}
+
+/**
+ * 處理更新設定（代理）
+ */
+async function handleUpdateSettingsProxy(
+  data: Partial<AppSettings>,
+  sendResponse: (response: any) => void
+) {
+  try {
+    await setSettings(data);
+    const settings = await getSettings();
+    sendResponse({ success: true, data: settings });
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    sendResponse({ success: false, message: errorMsg });
+  }
+}

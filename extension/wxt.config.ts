@@ -5,7 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   modules: ['@wxt-dev/module-vue'],
   vite: () => ({
-    plugins: [tailwindcss()],
+    plugins: [tailwindcss()] as any,
   }),  
   manifest: ({ mode }) => ({
     name: '星詠賣場助手',
@@ -14,7 +14,7 @@ export default defineConfig({
     version_name: '1.0 beta',
     description: '星詠賣場助手 - 快速搜尋商品、追蹤價格、自動比直換算、查看攤位位置',
     host_permissions: ['*://*.starcg.net/*'],
-    permissions: ['storage', 'activeTab'],
+    permissions: ['storage', 'activeTab', 'alarms', 'notifications'],
     externally_connectable: {
       matches: [
         'https://baconrad.github.io/StarCG-Market-Extension/*',

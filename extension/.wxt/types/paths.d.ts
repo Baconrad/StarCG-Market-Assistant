@@ -14,6 +14,7 @@ declare module "wxt/browser" {
     | "/logo.png"
     | "/map.png"
     | "/market.html"
+    | "/options.html"
     | "/popup.html"
     | "/wxt.svg"
   type HtmlPublicPath = Extract<PublicPath, `${string}.html`>
