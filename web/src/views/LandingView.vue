@@ -65,7 +65,7 @@ function enterMarket() {
     <div class="text-center py-12">
       <img src="/logo.png" alt="星詠賣場助手" class="w-20 h-20 object-cover mx-auto mb-6" />
       <h1 class="text-4xl font-bold text-[#8b4f2b] mb-4">星詠賣場助手</h1>
-      <p class="text-xl text-[#3b2b22] mb-8">Star Trade Assistant - 專為星詠魔力玩家打造的賣場搜尋工具</p>
+      <p class="text-xl text-[#3b2b22] mb-8">StarCG Trade Assistant - 專為星詠玩家打造的賣場搜尋工具</p>
       
       <!-- Loading -->
       <div v-if="isChecking" class="text-[#8b4f2b]/60 mb-8">
@@ -146,7 +146,7 @@ function enterMarket() {
       <div class="space-y-4 text-[#3b2b22]">
         <div class="flex items-center gap-4">
           <span class="w-8 h-8 bg-[#8b4f2b] text-white rounded-full flex items-center justify-center flex-shrink-0">1</span>
-          <p>安裝 Chrome 擴充功能，授權存取星詠魔力網站</p>
+          <p>安裝 Chrome 擴充功能</p>
         </div>
         <div class="flex items-center gap-4">
           <span class="w-8 h-8 bg-[#8b4f2b] text-white rounded-full flex items-center justify-center flex-shrink-0">2</span>
@@ -154,7 +154,7 @@ function enterMarket() {
         </div>
         <div class="flex items-center gap-4">
           <span class="w-8 h-8 bg-[#8b4f2b] text-white rounded-full flex items-center justify-center flex-shrink-0">3</span>
-          <p>輸入商品名稱搜尋，使用篩選功能找到心仪商品</p>
+          <p>輸入商品名稱搜尋，使用篩選功能找到商品</p>
         </div>
         <div class="flex items-center gap-4">
           <span class="w-8 h-8 bg-[#8b4f2b] text-white rounded-full flex items-center justify-center flex-shrink-0">4</span>
