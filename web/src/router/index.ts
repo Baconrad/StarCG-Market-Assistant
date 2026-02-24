@@ -4,7 +4,7 @@ import HomeView from '../views/HomeView.vue'
 import TrackedView from '../views/TrackedView.vue'
 
 const router = createRouter({
-  history: createWebHistory('/StarCG-Market-Extension/'),
+  history: createWebHistory('/StarCG-Market-Assistant/'),
   routes: [
     {
       path: '/',
