@@ -12,7 +12,7 @@ export default defineConfig({
       '@shared': resolve(__dirname, '../shared'),
     },
   },
-  base: '/StarCG-Market-Extension/',
+  base: '/StarCG-Market-Assistant/',
   build: {
     outDir: 'dist',
   },
