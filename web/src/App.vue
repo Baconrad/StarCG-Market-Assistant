@@ -50,7 +50,7 @@ async function checkExtension() {
     <nav class="bg-[#e8d5c4] border-b border-[#d6b089] px-6 py-4">
       <div class="max-w-6xl mx-auto flex items-center justify-between">
         <router-link to="/" class="flex items-center gap-3">
-          <img src="/logo.png" alt="星詠賣場助手" class="w-10 h-10 rounded-full object-cover" />
+          <img src="/logo.png" alt="星詠賣場助手" class="w-10 h-10 object-cover" />
           <h1 class="text-2xl font-bold text-[#8b4f2b]">星詠賣場助手</h1>
         </router-link>
         <div class="flex gap-2">

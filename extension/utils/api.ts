@@ -10,7 +10,7 @@ import type {
   MarketPet,
   MarketHistoryResponse,
   MarketHistoryRecord,
-} from '@/types/messages';
+} from '@/types/market';
 import { API_CONFIG, MARKET_CONFIG } from './constants';
 
 /**

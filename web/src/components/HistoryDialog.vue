@@ -13,13 +13,9 @@ import ShadTableBody from './shadcn/TableBody.vue'
 import ShadTableRow from './shadcn/TableRow.vue'
 import ShadTableCell from './shadcn/TableCell.vue'
 
-const props = defineProps<{
+defineProps<{
   open: boolean
   item: TrackedItem | null
-}>()
-
-const emit = defineEmits<{
-  'update:open': [value: boolean]
 }>()
 
 const store = useMarketStore()

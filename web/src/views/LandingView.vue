@@ -63,7 +63,7 @@ function enterMarket() {
   <div class="max-w-4xl mx-auto">
     <!-- Hero Section -->
     <div class="text-center py-12">
-      <img src="/logo.png" alt="星詠賣場助手" class="w-20 h-20 rounded-full object-cover mx-auto mb-6" />
+      <img src="/logo.png" alt="星詠賣場助手" class="w-20 h-20 object-cover mx-auto mb-6" />
       <h1 class="text-4xl font-bold text-[#8b4f2b] mb-4">星詠賣場助手</h1>
       <p class="text-xl text-[#3b2b22] mb-8">Star Trade Assistant - 專為星詠魔力玩家打造的賣場搜尋工具</p>
       
@@ -93,7 +93,7 @@ function enterMarket() {
           class="bg-[#8b4f2b] hover:bg-[#6d3f22] text-white px-8 py-4 text-lg cursor-pointer"
           @click="enterMarket"
         >
-          🛒 進入賣場
+          🛍️ 進入賣場
         </ShadButton>
         <p class="text-sm text-[#8b4f2b]/60 mt-3">
           已偵測到擴充功能，點擊上方按鈕開始使用
@@ -144,19 +144,19 @@ function enterMarket() {
     <ShadCard class="p-8 mb-12">
       <h2 class="text-2xl font-bold text-[#8b4f2b] mb-6 text-center">使用說明</h2>
       <div class="space-y-4 text-[#3b2b22]">
-        <div class="flex items-start gap-4">
+        <div class="flex items-center gap-4">
           <span class="w-8 h-8 bg-[#8b4f2b] text-white rounded-full flex items-center justify-center flex-shrink-0">1</span>
           <p>安裝 Chrome 擴充功能，授權存取星詠魔力網站</p>
         </div>
-        <div class="flex items-start gap-4">
+        <div class="flex items-center gap-4">
           <span class="w-8 h-8 bg-[#8b4f2b] text-white rounded-full flex items-center justify-center flex-shrink-0">2</span>
           <p>點擊擴充功能圖示或開啟賣場搜尋頁面</p>
         </div>
-        <div class="flex items-start gap-4">
+        <div class="flex items-center gap-4">
           <span class="w-8 h-8 bg-[#8b4f2b] text-white rounded-full flex items-center justify-center flex-shrink-0">3</span>
           <p>輸入商品名稱搜尋，使用篩選功能找到心仪商品</p>
         </div>
-        <div class="flex items-start gap-4">
+        <div class="flex items-center gap-4">
           <span class="w-8 h-8 bg-[#8b4f2b] text-white rounded-full flex items-center justify-center flex-shrink-0">4</span>
           <p>追蹤商品價格，查看歷史成交記錄</p>
         </div>

@@ -1,5 +1,4 @@
-import type { MarketApiResponse } from '../types/messages'
-import type { Payment } from '../types/market'
+import type { MarketApiResponse, Payment } from '../types/market'
 
 export function buildRowsFromApi(apiResponse: MarketApiResponse): Payment[] {
   const out: Payment[] = []

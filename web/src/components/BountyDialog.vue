@@ -10,7 +10,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './shadcn/ui/tabs'
 import ShadButton from './shadcn/Button.vue'
 
-const props = defineProps<{
+defineProps<{
   open: boolean
 }>()
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const props = defineProps<{
+defineProps<{
   variant?: 'default' | 'secondary' | 'destructive' | 'outline' | 'ghost';
   size?: 'default' | 'sm' | 'lg';
   disabled?: boolean;

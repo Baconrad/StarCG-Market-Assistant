@@ -36,7 +36,7 @@ function getTimeUntilExpiration(timestamp: string): string {
 
 export const columns = (
   onTrack: (row: Payment) => void,
-  onRemoveTrack: (name: string) => void,
+  _onRemoveTrack: (name: string) => void,
   trackedItems: TrackedItem[],
   onShowMap?: (x: number, y: number) => void
 ): ColumnDef<Payment>[] => [
@@ -57,12 +57,43 @@ export const columns = (
     header: '商品名稱',
     cell: ({ row }) => {
       const { iconId, type, name } = row.original
-      const imgSrc =
+      
+      // 圖片 fallback 順序：
+      // 1. 道具: https://member.starcg.net/metamo/item/{ID}.gif
+      //    寵物: https://member.starcg.net/metamo/pet/PetHead/{ID}.png
+      // 2. 道具 fallback: https://member.starcg.net/metamo/png/{ID}.png
+      // 3. 最終 fallback: https://member.starcg.net/metamo/png/97004.png
+      
+      const primarySrc =
         type === 'item'
           ? `https://member.starcg.net/metamo/item/${iconId}.gif`
           : `https://member.starcg.net/metamo/pet/PetHead/${iconId}.png`
+      
+      const fallbackSrc =
+        type === 'item'
+          ? `https://member.starcg.net/metamo/png/${iconId}.png`
+          : 'https://member.starcg.net/metamo/png/97004.png'
+      
+      const finalFallbackSrc = 'https://member.starcg.net/metamo/png/97004.png'
+      
+      // 處理圖片載入錯誤的事件處理函數
+      const onImageError = (e: Event) => {
+        const img = e.target as HTMLImageElement
+        if (img.src === primarySrc) {
+          // 第一次失敗，嘗試 fallback
+          img.src = fallbackSrc
+        } else if (img.src !== finalFallbackSrc) {
+          // fallback 也失敗，使用最終 fallback
+          img.src = finalFallbackSrc
+        }
+      }
+      
       return h('div', { class: 'flex items-center gap-2' }, [
-        h('img', { src: imgSrc, class: 'w-6 h-6 object-contain' }),
+        h('img', { 
+          src: primarySrc, 
+          class: 'w-6 h-6 object-contain',
+          onError: onImageError,
+        }),
         h('span', name),
       ])
     },

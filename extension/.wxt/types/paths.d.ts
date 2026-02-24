@@ -13,7 +13,6 @@ declare module "wxt/browser" {
     | "/icon/96.png"
     | "/logo.png"
     | "/map.png"
-    | "/market.html"
     | "/options.html"
     | "/popup.html"
     | "/wxt.svg"

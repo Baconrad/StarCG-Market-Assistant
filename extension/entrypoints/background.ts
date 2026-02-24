@@ -5,6 +5,13 @@ import {
   filterMarketDataBySearch,
   fetchMarketHistory,
 } from '@/utils/api';
+import {
+  getMarketCache,
+  setMarketCache,
+  getHistoryCache,
+  setHistoryCache,
+  clearAllCache,
+} from '@/utils/cache';
 import type {
   FetchMarketMessage,
   AddTrackedMessage,
@@ -425,8 +432,19 @@ async function handleFetchMarketAllProxy(
   sendResponse: (response: any) => void
 ) {
   try {
+    // 檢查快取
+    const cached = getMarketCache(data.search);
+    if (cached) {
+      sendResponse({ success: true, data: cached, fromCache: true });
+      return;
+    }
+
     const result = await fetchAllMarketPages(data.search);
-    sendResponse({ success: true, data: result });
+    
+    // 存入快取
+    setMarketCache(data.search, result);
+    
+    sendResponse({ success: true, data: result, fromCache: false });
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     sendResponse({ success: false, message: errorMsg });
@@ -441,12 +459,25 @@ async function handleFetchHistoryProxy(
   sendResponse: (response: any) => void
 ) {
   try {
+    const type = (data.type as string) || 'all';
+    
+    // 檢查快取
+    const cached = getHistoryCache(data.search, type);
+    if (cached) {
+      sendResponse({ success: true, data: cached, fromCache: true });
+      return;
+    }
+
     const result = await fetchMarketHistory(
       data.search,
-      (data.type as any) || 'all',
+      type as any,
       data.maxPages || 3
     );
-    sendResponse({ success: true, data: result });
+    
+    // 存入快取
+    setHistoryCache(data.search, type, result);
+    
+    sendResponse({ success: true, data: result, fromCache: false });
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     sendResponse({ success: false, message: errorMsg });

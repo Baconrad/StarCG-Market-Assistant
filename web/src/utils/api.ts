@@ -6,7 +6,7 @@
 import type {
   MarketApiResponse,
   MarketHistoryRecord,
-} from '@/types/messages';
+} from '@/types/market';
 
 // 從環境變數讀取擴充功能 ID
 const EXTENSION_ID = import.meta.env.VITE_EXTENSION_ID || 'ooiofmpdcmcjclbbphgkfhcnebpomded';

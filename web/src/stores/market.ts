@@ -133,8 +133,7 @@ export const useMarketStore = defineStore('market', () => {
   async function syncTrackedItems() {
     try {
       const EXTENSION_ID = import.meta.env.VITE_EXTENSION_ID || 'ooiofmpdcmcjclbbphgkfhcnebpomded'
-      // @ts-ignore
-      const response = await new Promise((resolve) => {
+      const response = await new Promise<{ success: boolean; data?: TrackedItem[] }>((resolve) => {
         // @ts-ignore
         chrome.runtime.sendMessage(EXTENSION_ID, { type: 'GET_TRACKED' }, resolve)
       })

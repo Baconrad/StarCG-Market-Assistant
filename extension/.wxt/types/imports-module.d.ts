@@ -20,7 +20,9 @@ declare module '#imports' {
   export { fakeBrowser } from 'wxt/testing';
   export { fetchMarketData, fetchAllMarketPages, filterMarketDataBySearch, extractStallCoordinates, extractCdKey, getTimeUntilExpiration, fetchMarketHistory } from '../utils/api';
   export { bountyEquipment, bountyPets, groupBountyEquipmentByCategory, BountyItem } from '../utils/bountyData';
+  export { CACHE_CONFIG, getMarketCache, setMarketCache, getHistoryCache, setHistoryCache, clearAllCache, getCacheStats } from '../utils/cache';
   export { API_CONFIG, MARKET_CONFIG, ERROR_MESSAGES, SUCCESS_MESSAGES } from '../utils/constants';
+  export { ErrorCode, ErrorCode, AppError, AppError, createAppError, handleError, withErrorHandling, isAppError, getUserErrorMessage } from '../utils/errors';
   export { sendMessage, onMessage, getExtensionUrl } from '../utils/messaging';
   export { getStorage, setStorage, removeStorage, clearStorage, getSettings, setSettings, updateSetting } from '../utils/storage';
 }

@@ -60,7 +60,7 @@ function formatPrice(price: number | undefined) {
       <!-- 前往賣場按鈕 -->
       <ShadButton size="lg" class="w-full" @click="openWebApp('/market')">
         <span class="flex items-center justify-center gap-2">
-          <span>🛒</span>
+          <span>🛍️</span>
           <span>前往賣場搜尋</span>
         </span>
       </ShadButton>

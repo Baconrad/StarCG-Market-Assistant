@@ -2,9 +2,12 @@
 export {}
 declare global {
   const API_CONFIG: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/constants').API_CONFIG
+  const AppError: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/errors').AppError
+  const CACHE_CONFIG: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/cache').CACHE_CONFIG
   const ContentScriptContext: typeof import('wxt/utils/content-script-context').ContentScriptContext
   const ERROR_MESSAGES: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/constants').ERROR_MESSAGES
   const EffectScope: typeof import('vue').EffectScope
+  const ErrorCode: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/errors').ErrorCode
   const InvalidMatchPattern: typeof import('wxt/utils/match-patterns').InvalidMatchPattern
   const MARKET_CONFIG: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/constants').MARKET_CONFIG
   const MatchPattern: typeof import('wxt/utils/match-patterns').MatchPattern
@@ -12,9 +15,11 @@ declare global {
   const bountyEquipment: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/bountyData').bountyEquipment
   const bountyPets: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/bountyData').bountyPets
   const browser: typeof import('wxt/browser').browser
+  const clearAllCache: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/cache').clearAllCache
   const clearStorage: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/storage').clearStorage
   const computed: typeof import('vue').computed
   const createApp: typeof import('vue').createApp
+  const createAppError: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/errors').createAppError
   const createIframeUi: typeof import('wxt/utils/content-script-ui/iframe').createIframeUi
   const createIntegratedUi: typeof import('wxt/utils/content-script-ui/integrated').createIntegratedUi
   const createShadowRootUi: typeof import('wxt/utils/content-script-ui/shadow-root').createShadowRootUi
@@ -34,17 +39,23 @@ declare global {
   const fetchMarketData: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/api').fetchMarketData
   const fetchMarketHistory: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/api').fetchMarketHistory
   const filterMarketDataBySearch: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/api').filterMarketDataBySearch
+  const getCacheStats: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/cache').getCacheStats
   const getCurrentInstance: typeof import('vue').getCurrentInstance
   const getCurrentScope: typeof import('vue').getCurrentScope
   const getCurrentWatcher: typeof import('vue').getCurrentWatcher
   const getExtensionUrl: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/messaging').getExtensionUrl
+  const getHistoryCache: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/cache').getHistoryCache
+  const getMarketCache: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/cache').getMarketCache
   const getSettings: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/storage').getSettings
   const getStorage: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/storage').getStorage
   const getTimeUntilExpiration: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/api').getTimeUntilExpiration
+  const getUserErrorMessage: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/errors').getUserErrorMessage
   const groupBountyEquipmentByCategory: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/bountyData').groupBountyEquipmentByCategory
   const h: typeof import('vue').h
+  const handleError: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/errors').handleError
   const inject: typeof import('vue').inject
   const injectScript: typeof import('wxt/utils/inject-script').injectScript
+  const isAppError: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/errors').isAppError
   const isProxy: typeof import('vue').isProxy
   const isReactive: typeof import('vue').isReactive
   const isReadonly: typeof import('vue').isReadonly
@@ -74,6 +85,8 @@ declare global {
   const removeStorage: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/storage').removeStorage
   const resolveComponent: typeof import('vue').resolveComponent
   const sendMessage: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/messaging').sendMessage
+  const setHistoryCache: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/cache').setHistoryCache
+  const setMarketCache: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/cache').setMarketCache
   const setSettings: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/storage').setSettings
   const setStorage: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/storage').setStorage
   const shallowReactive: typeof import('vue').shallowReactive
@@ -99,6 +112,7 @@ declare global {
   const watchEffect: typeof import('vue').watchEffect
   const watchPostEffect: typeof import('vue').watchPostEffect
   const watchSyncEffect: typeof import('vue').watchSyncEffect
+  const withErrorHandling: typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/errors').withErrorHandling
 }
 // for type re-export
 declare global {
@@ -135,15 +149,21 @@ declare global {
   // @ts-ignore
   export type { BountyItem } from 'C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/bountyData'
   import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/bountyData')
+  // @ts-ignore
+  export type { ErrorCode, AppError } from 'C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/errors'
+  import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/errors')
 }
 // for vue template auto import
 import { UnwrapRef } from 'vue'
 declare module 'vue' {
   interface ComponentCustomProperties {
     readonly API_CONFIG: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/constants')['API_CONFIG']>
+    readonly AppError: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/errors')['AppError']>
+    readonly CACHE_CONFIG: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/cache')['CACHE_CONFIG']>
     readonly ContentScriptContext: UnwrapRef<typeof import('wxt/utils/content-script-context')['ContentScriptContext']>
     readonly ERROR_MESSAGES: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/constants')['ERROR_MESSAGES']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
+    readonly ErrorCode: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/errors')['ErrorCode']>
     readonly InvalidMatchPattern: UnwrapRef<typeof import('wxt/utils/match-patterns')['InvalidMatchPattern']>
     readonly MARKET_CONFIG: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/constants')['MARKET_CONFIG']>
     readonly MatchPattern: UnwrapRef<typeof import('wxt/utils/match-patterns')['MatchPattern']>
@@ -151,9 +171,11 @@ declare module 'vue' {
     readonly bountyEquipment: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/bountyData')['bountyEquipment']>
     readonly bountyPets: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/bountyData')['bountyPets']>
     readonly browser: UnwrapRef<typeof import('wxt/browser')['browser']>
+    readonly clearAllCache: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/cache')['clearAllCache']>
     readonly clearStorage: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/storage')['clearStorage']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
+    readonly createAppError: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/errors')['createAppError']>
     readonly createIframeUi: UnwrapRef<typeof import('wxt/utils/content-script-ui/iframe')['createIframeUi']>
     readonly createIntegratedUi: UnwrapRef<typeof import('wxt/utils/content-script-ui/integrated')['createIntegratedUi']>
     readonly createShadowRootUi: UnwrapRef<typeof import('wxt/utils/content-script-ui/shadow-root')['createShadowRootUi']>
@@ -173,17 +195,23 @@ declare module 'vue' {
     readonly fetchMarketData: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/api')['fetchMarketData']>
     readonly fetchMarketHistory: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/api')['fetchMarketHistory']>
     readonly filterMarketDataBySearch: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/api')['filterMarketDataBySearch']>
+    readonly getCacheStats: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/cache')['getCacheStats']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
     readonly getCurrentWatcher: UnwrapRef<typeof import('vue')['getCurrentWatcher']>
     readonly getExtensionUrl: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/messaging')['getExtensionUrl']>
+    readonly getHistoryCache: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/cache')['getHistoryCache']>
+    readonly getMarketCache: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/cache')['getMarketCache']>
     readonly getSettings: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/storage')['getSettings']>
     readonly getStorage: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/storage')['getStorage']>
     readonly getTimeUntilExpiration: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/api')['getTimeUntilExpiration']>
+    readonly getUserErrorMessage: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/errors')['getUserErrorMessage']>
     readonly groupBountyEquipmentByCategory: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/bountyData')['groupBountyEquipmentByCategory']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
+    readonly handleError: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/errors')['handleError']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly injectScript: UnwrapRef<typeof import('wxt/utils/inject-script')['injectScript']>
+    readonly isAppError: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/errors')['isAppError']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
@@ -213,6 +241,8 @@ declare module 'vue' {
     readonly removeStorage: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/storage')['removeStorage']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
     readonly sendMessage: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/messaging')['sendMessage']>
+    readonly setHistoryCache: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/cache')['setHistoryCache']>
+    readonly setMarketCache: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/cache')['setMarketCache']>
     readonly setSettings: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/storage')['setSettings']>
     readonly setStorage: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/storage')['setStorage']>
     readonly shallowReactive: UnwrapRef<typeof import('vue')['shallowReactive']>
@@ -238,5 +268,6 @@ declare module 'vue' {
     readonly watchEffect: UnwrapRef<typeof import('vue')['watchEffect']>
     readonly watchPostEffect: UnwrapRef<typeof import('vue')['watchPostEffect']>
     readonly watchSyncEffect: UnwrapRef<typeof import('vue')['watchSyncEffect']>
+    readonly withErrorHandling: UnwrapRef<typeof import('C:/Users/sacre/Documents/GitHub/StarCG-Market-Extension/extension/utils/errors')['withErrorHandling']>
   }
 }

@@ -1,21 +1,15 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useMarketStore } from '../stores/market'
 import { fetchAllMarketPages } from '../utils/api'
 import { buildRowsFromApi } from '../utils/columns'
 import { ERROR_MESSAGES } from '../utils/constants'
-import type { Payment } from '../types/market'
 
 // Components
 import ShadCard from '../components/shadcn/Card.vue'
 import ShadButton from '../components/shadcn/Button.vue'
 import ShadInput from '../components/shadcn/Input.vue'
-import ShadTable from '../components/shadcn/Table.vue'
-import ShadTableHeader from '../components/shadcn/TableHeader.vue'
-import ShadTableBody from '../components/shadcn/TableBody.vue'
-import ShadTableRow from '../components/shadcn/TableRow.vue'
-import ShadTableCell from '../components/shadcn/TableCell.vue'
 import MarketTable from '../components/MarketTable.vue'
 import BountyDialog from '../components/BountyDialog.vue'
 
