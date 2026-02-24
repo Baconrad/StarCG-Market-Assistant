@@ -3,55 +3,21 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ShadCard from '../components/shadcn/Card.vue'
 import ShadButton from '../components/shadcn/Button.vue'
+import { checkExtensionInstalled as checkExtension, PROD_EXTENSION_ID } from '../utils/extension'
 
 const router = useRouter()
 const isExtensionInstalled = ref(false)
 const isChecking = ref(true)
 
-// 從環境變數讀取擴充功能 ID
-const EXTENSION_ID = import.meta.env.VITE_EXTENSION_ID || 'ooiofmpdcmcjclbbphgkfhcnebpomded'
-
-onMounted(() => {
-  checkExtensionInstalled()
+onMounted(async () => {
+  const result = await checkExtension()
+  isExtensionInstalled.value = result.installed
+  isChecking.value = false
 })
 
-function checkExtensionInstalled() {
-  // 嘗試發送訊息給擴充功能
-  try {
-    // @ts-ignore
-    if (typeof chrome !== 'undefined' && chrome.runtime) {
-      // @ts-ignore
-      chrome.runtime.sendMessage(EXTENSION_ID, { type: 'CHECK_INSTALLED' }, (response: any) => {
-        if (chrome.runtime.lastError || !response?.installed) {
-          // 擴充功能未安裝或無法連線
-          isExtensionInstalled.value = false
-        } else {
-          // 擴充功能已安裝（不自動跳轉，讓使用者選擇）
-          isExtensionInstalled.value = true
-        }
-        isChecking.value = false
-      })
-      
-      // 設定超時，避免無限等待
-      setTimeout(() => {
-        if (isChecking.value) {
-          isChecking.value = false
-          isExtensionInstalled.value = false
-        }
-      }, 1000)
-    } else {
-      isExtensionInstalled.value = false
-      isChecking.value = false
-    }
-  } catch {
-    isExtensionInstalled.value = false
-    isChecking.value = false
-  }
-}
-
 function openChromeStore() {
-  // Chrome Web Store 連結（之後替換為實際連結）
-  window.open(`https://chrome.google.com/webstore/detail/${EXTENSION_ID}`, '_blank')
+  // Chrome Web Store 連結
+  window.open(`https://chrome.google.com/webstore/detail/${PROD_EXTENSION_ID}`, '_blank')
 }
 
 function enterMarket() {
