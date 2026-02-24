@@ -58,6 +58,36 @@ function openHistoryDialog(item: TrackedItem) {
 function searchItem(name: string) {
   router.push({ path: '/market', query: { q: name } })
 }
+
+/**
+ * 取得上次更新時間的顯示文字
+ */
+function getLastUpdatedText(lastUpdated: number | undefined): string {
+  if (!lastUpdated) return '-'
+  
+  const now = Date.now()
+  const diffMs = now - lastUpdated
+  const diffMins = Math.floor(diffMs / (1000 * 60))
+  
+  if (diffMins <= 30) return '30 分鐘內'
+  if (diffMins <= 24 * 60) return '1 ~ 24 小時內'
+  return '超過 1 天'
+}
+
+/**
+ * 取得上次更新時間的樣式類別
+ */
+function getLastUpdatedClass(lastUpdated: number | undefined): string {
+  if (!lastUpdated) return 'text-[#8b4f2b]/40'
+  
+  const now = Date.now()
+  const diffMs = now - lastUpdated
+  const diffMins = Math.floor(diffMs / (1000 * 60))
+  
+  if (diffMins <= 30) return 'text-green-600'
+  if (diffMins <= 24 * 60) return 'text-orange-500'
+  return 'text-red-500'
+}
 </script>
 
 <template>
@@ -90,6 +120,7 @@ function searchItem(name: string) {
             <ShadTableCell :is-header="true" class="text-center">名稱</ShadTableCell>
             <ShadTableCell :is-header="true" class="text-center">最低成交價</ShadTableCell>
             <ShadTableCell :is-header="true" class="text-center">平均成交價</ShadTableCell>
+            <ShadTableCell :is-header="true" class="text-center">上次更新時間</ShadTableCell>
             <ShadTableCell :is-header="true" class="text-center">歷史成交明細</ShadTableCell>
             <ShadTableCell :is-header="true" class="text-center">功能</ShadTableCell>
           </ShadTableRow>
@@ -116,6 +147,11 @@ function searchItem(name: string) {
                 {{ new Intl.NumberFormat('en-US').format(item.avgPrice) }}
               </span>
               <span v-else class="text-[#8b4f2b]/40">-</span>
+            </ShadTableCell>
+            <ShadTableCell class="text-center">
+              <span :class="getLastUpdatedClass(item.lastUpdated)">
+                {{ getLastUpdatedText(item.lastUpdated) }}
+              </span>
             </ShadTableCell>
             <ShadTableCell class="text-center">
               <ShadButton
