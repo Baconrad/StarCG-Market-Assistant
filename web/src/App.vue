@@ -25,7 +25,9 @@ async function checkExtension() {
     if (typeof chrome !== 'undefined' && chrome.runtime) {
       // @ts-ignore
       chrome.runtime.sendMessage(EXTENSION_ID, { type: 'CHECK_INSTALLED' }, (response: any) => {
-        if (!chrome.runtime.lastError && response?.installed) {
+        // 必須檢查 lastError 並「消耗」它，否則 Chrome 會顯示錯誤
+        const lastError = chrome.runtime.lastError
+        if (!lastError && response?.installed) {
           isExtensionInstalled.value = true
         }
         isChecking.value = false
