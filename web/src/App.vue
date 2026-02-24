@@ -2,49 +2,24 @@
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useMarketStore } from './stores/market'
+import { checkExtensionInstalled } from './utils/extension'
 
 const store = useMarketStore()
 const route = useRoute()
 const isExtensionInstalled = ref(false)
 const isChecking = ref(true)
 
-// 從環境變數讀取擴充功能 ID
-const EXTENSION_ID = import.meta.env.VITE_EXTENSION_ID || 'ooiofmpdcmcjclbbphgkfhcnebpomded'
-
-onMounted(() => {
+onMounted(async () => {
   store.loadMagicCrystalRatio()
-  checkExtension().then(() => {
-    // 擴充功能檢查完成後，嘗試同步追蹤資料
-    store.syncTrackedItems()
-  })
+  
+  // 檢查 Extension 是否已安裝
+  const result = await checkExtensionInstalled()
+  isExtensionInstalled.value = result.installed
+  isChecking.value = false
+  
+  // 擴充功能檢查完成後，嘗試同步追蹤資料
+  await store.syncTrackedItems()
 })
-
-async function checkExtension() {
-  try {
-    // @ts-ignore
-    if (typeof chrome !== 'undefined' && chrome.runtime) {
-      // @ts-ignore
-      chrome.runtime.sendMessage(EXTENSION_ID, { type: 'CHECK_INSTALLED' }, (response: any) => {
-        // 必須檢查 lastError 並「消耗」它，否則 Chrome 會顯示錯誤
-        const lastError = chrome.runtime.lastError
-        if (!lastError && response?.installed) {
-          isExtensionInstalled.value = true
-        }
-        isChecking.value = false
-      })
-      // 設定超時
-      setTimeout(() => {
-        if (isChecking.value) {
-          isChecking.value = false
-        }
-      }, 1000)
-    } else {
-      isChecking.value = false
-    }
-  } catch {
-    isChecking.value = false
-  }
-}
 </script>
 
 <template>

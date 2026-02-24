@@ -2,6 +2,7 @@ import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import type { Payment, ItemType, PriceType } from '../types/market'
 import type { MarketHistoryRecord, TrackedItem } from '../types/messages'
+import { sendExtensionMessage } from '../utils/extension'
 
 export const useMarketStore = defineStore('market', () => {
   // State
@@ -77,19 +78,19 @@ export const useMarketStore = defineStore('market', () => {
     if (exists) return false
     
     // 發送到 extension 儲存
-    try {
-      const EXTENSION_ID = import.meta.env.VITE_EXTENSION_ID || 'ooiofmpdcmcjclbbphgkfhcnebpomded'
-      // @ts-ignore
-      await chrome.runtime.sendMessage(EXTENSION_ID, {
-        type: 'ADD_TRACKED',
-        data: { item }
-      })
-      // 更新本地狀態
+    const response = await sendExtensionMessage<{ success: boolean }>({
+      type: 'ADD_TRACKED',
+      data: { item }
+    })
+    
+    if (response?.success) {
       trackedItems.value.unshift(item)
       return true
-    } catch (error) {
-      console.error('Failed to add tracked item to extension:', error)
-      return false
+    } else {
+      // Extension 未安裝，使用 localStorage
+      trackedItems.value.unshift(item)
+      saveTrackedItems()
+      return true
     }
   }
 
@@ -97,67 +98,46 @@ export const useMarketStore = defineStore('market', () => {
     const item = trackedItems.value[index]
     if (!item) return
     
-    try {
-      const EXTENSION_ID = import.meta.env.VITE_EXTENSION_ID || 'ooiofmpdcmcjclbbphgkfhcnebpomded'
-      // @ts-ignore
-      await chrome.runtime.sendMessage(EXTENSION_ID, {
-        type: 'REMOVE_TRACKED',
-        data: { name: item.name }
-      })
-      // 更新本地狀態
-      trackedItems.value.splice(index, 1)
-    } catch (error) {
-      console.error('Failed to remove tracked item from extension:', error)
+    const response = await sendExtensionMessage<{ success: boolean }>({
+      type: 'REMOVE_TRACKED',
+      data: { name: item.name }
+    })
+    
+    // 無論 Extension 是否存在，都更新本地狀態
+    trackedItems.value.splice(index, 1)
+    
+    if (!response?.success) {
+      // Extension 未安裝，同步到 localStorage
+      saveTrackedItems()
     }
   }
 
   async function removeTrackedByName(name: string) {
-    try {
-      const EXTENSION_ID = import.meta.env.VITE_EXTENSION_ID || 'ooiofmpdcmcjclbbphgkfhcnebpomded'
-      // @ts-ignore
-      await chrome.runtime.sendMessage(EXTENSION_ID, {
-        type: 'REMOVE_TRACKED',
-        data: { name }
-      })
-      // 更新本地狀態
-      const index = trackedItems.value.findIndex((i) => i.name === name)
-      if (index !== -1) {
-        trackedItems.value.splice(index, 1)
-      }
-    } catch (error) {
-      console.error('Failed to remove tracked item from extension:', error)
+    const response = await sendExtensionMessage<{ success: boolean }>({
+      type: 'REMOVE_TRACKED',
+      data: { name }
+    })
+    
+    const index = trackedItems.value.findIndex((i) => i.name === name)
+    if (index !== -1) {
+      trackedItems.value.splice(index, 1)
+    }
+    
+    if (!response?.success) {
+      saveTrackedItems()
     }
   }
 
   // 從 Extension 同步追蹤資料
   async function syncTrackedItems() {
-    // 先檢查 chrome.runtime 是否存在
-    // @ts-ignore
-    if (typeof chrome === 'undefined' || !chrome.runtime) {
-      // 回退到 localStorage
-      loadTrackedItems()
-      return
-    }
+    const response = await sendExtensionMessage<{ success: boolean; data?: TrackedItem[] }>({
+      type: 'GET_TRACKED'
+    })
     
-    try {
-      const EXTENSION_ID = import.meta.env.VITE_EXTENSION_ID || 'ooiofmpdcmcjclbbphgkfhcnebpomded'
-      const response = await new Promise<{ success: boolean; data?: TrackedItem[] }>((resolve) => {
-        // @ts-ignore
-        chrome.runtime.sendMessage(EXTENSION_ID, { type: 'GET_TRACKED' }, (res) => {
-          // 消耗 lastError 避免 console 錯誤
-          const lastError = chrome.runtime.lastError
-          resolve(lastError ? { success: false } : res)
-        })
-      })
-      if (response?.success && response?.data) {
-        trackedItems.value = response.data
-      } else {
-        // Extension 未安裝或回應失敗，回退到 localStorage
-        loadTrackedItems()
-      }
-    } catch (error) {
-      console.error('Failed to sync tracked items from extension:', error)
-      // 回退到 localStorage
+    if (response?.success && response?.data) {
+      trackedItems.value = response.data
+    } else {
+      // Extension 未安裝或回應失敗，回退到 localStorage
       loadTrackedItems()
     }
   }
@@ -170,19 +150,15 @@ export const useMarketStore = defineStore('market', () => {
     trackedItems.value[index] = { ...trackedItems.value[index], ...data }
     
     // 發送到 extension 儲存
-    try {
-      const EXTENSION_ID = import.meta.env.VITE_EXTENSION_ID || 'ooiofmpdcmcjclbbphgkfhcnebpomded'
-      // @ts-ignore
-      await chrome.runtime.sendMessage(EXTENSION_ID, {
-        type: 'UPDATE_TRACKED',
-        data: { name: item.name, updates: data }
-      })
-    } catch (error) {
-      console.error('Failed to update tracked item in extension:', error)
-    }
+    const response = await sendExtensionMessage<{ success: boolean }>({
+      type: 'UPDATE_TRACKED',
+      data: { name: item.name, updates: data }
+    })
     
-    // 同時保存到 localStorage 作為備份
-    saveTrackedItems()
+    if (!response?.success) {
+      // Extension 未安裝，保存到 localStorage
+      saveTrackedItems()
+    }
   }
 
   function saveTrackedItems() {

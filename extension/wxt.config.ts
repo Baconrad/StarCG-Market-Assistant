@@ -9,7 +9,7 @@ export default defineConfig({
   }),  
   manifest: ({ mode }) => ({
     name: '星詠賣場助手',
-    short_name: 'Star Trade Assistant',
+    short_name: 'StarCG Market Assistant',
     version: '1.0',
     version_name: '1.0 beta',
     description: '星詠賣場助手 - 快速搜尋商品、追蹤價格、自動比直換算、查看攤位位置',
@@ -17,8 +17,7 @@ export default defineConfig({
     permissions: ['storage', 'activeTab', 'alarms', 'notifications'],
     externally_connectable: {
       matches: [
-        'https://baconrad.github.io/StarCG-Market-Extension/*',
-        'http://localhost:*/*',
+        'https://baconrad.github.io/StarCG-Market-Assistant/*'
       ],
       accepts_tls_channel_id: false,
     },
