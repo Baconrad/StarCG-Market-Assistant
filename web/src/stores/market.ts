@@ -131,14 +131,29 @@ export const useMarketStore = defineStore('market', () => {
 
   // 從 Extension 同步追蹤資料
   async function syncTrackedItems() {
+    // 先檢查 chrome.runtime 是否存在
+    // @ts-ignore
+    if (typeof chrome === 'undefined' || !chrome.runtime) {
+      // 回退到 localStorage
+      loadTrackedItems()
+      return
+    }
+    
     try {
       const EXTENSION_ID = import.meta.env.VITE_EXTENSION_ID || 'ooiofmpdcmcjclbbphgkfhcnebpomded'
       const response = await new Promise<{ success: boolean; data?: TrackedItem[] }>((resolve) => {
         // @ts-ignore
-        chrome.runtime.sendMessage(EXTENSION_ID, { type: 'GET_TRACKED' }, resolve)
+        chrome.runtime.sendMessage(EXTENSION_ID, { type: 'GET_TRACKED' }, (res) => {
+          // 消耗 lastError 避免 console 錯誤
+          const lastError = chrome.runtime.lastError
+          resolve(lastError ? { success: false } : res)
+        })
       })
       if (response?.success && response?.data) {
         trackedItems.value = response.data
+      } else {
+        // Extension 未安裝或回應失敗，回退到 localStorage
+        loadTrackedItems()
       }
     } catch (error) {
       console.error('Failed to sync tracked items from extension:', error)
