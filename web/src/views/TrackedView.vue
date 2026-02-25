@@ -116,7 +116,7 @@ function getLastUpdatedClass(lastUpdated: number | undefined): string {
     <!-- 歷史成交價限制說明 -->
     <div class="mb-6 p-3 bg-amber-50 border border-amber-200 rounded-lg">
       <p class="text-sm text-amber-800">
-        ⚠️ 注意：歷史成交價可能受名稱相似的物品影響。例如搜尋「壽喜鍋」時，可能會包含「一箱壽喜鍋」的成交記錄，導致價格不準確。
+        ⚠️ 注意：歷史成交價可能受名稱相似的物品影響。例如搜尋「壽喜鍋」時，可能會包含大量「一箱壽喜鍋」的成交記錄，導致價格不準確或沒有資訊。
       </p>
     </div>
 

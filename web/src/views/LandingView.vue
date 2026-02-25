@@ -31,7 +31,7 @@ function enterMarket() {
     <div class="text-center py-12">
       <img src="/logo.png" alt="星詠賣場助手" class="w-20 h-20 object-cover mx-auto mb-6" />
       <h1 class="text-4xl font-bold text-[#8b4f2b] mb-4">星詠賣場助手</h1>
-      <p class="text-xl text-[#3b2b22] mb-8">StarCG Trade Assistant - 專為星詠玩家打造的賣場搜尋工具</p>
+      <p class="text-xl text-[#3b2b22] mb-8">StarCG Market Assistant - 專為星詠玩家打造的賣場搜尋工具</p>
       
       <!-- Loading -->
       <div v-if="isChecking" class="text-[#8b4f2b]/60 mb-8">
