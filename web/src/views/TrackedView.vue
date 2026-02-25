@@ -69,8 +69,11 @@ function getLastUpdatedText(lastUpdated: number | undefined): string {
   const diffMs = now - lastUpdated
   const diffMins = Math.floor(diffMs / (1000 * 60))
   
-  if (diffMins <= 30) return '30 分鐘內'
-  if (diffMins <= 24 * 60) return '1 ~ 24 小時內'
+  if (diffMins < 60) return '1 小時內'
+  
+  const diffHours = Math.floor(diffMins / 60)
+  if (diffHours < 24) return `${diffHours} 小時內`
+  
   return '超過 1 天'
 }
 
@@ -84,8 +87,11 @@ function getLastUpdatedClass(lastUpdated: number | undefined): string {
   const diffMs = now - lastUpdated
   const diffMins = Math.floor(diffMs / (1000 * 60))
   
-  if (diffMins <= 30) return 'text-green-600'
-  if (diffMins <= 24 * 60) return 'text-orange-500'
+  if (diffMins < 60) return 'text-green-600'
+  
+  const diffHours = Math.floor(diffMins / 60)
+  if (diffHours < 24) return 'text-orange-500'
+  
   return 'text-red-500'
 }
 </script>
