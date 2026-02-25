@@ -98,7 +98,7 @@ function getLastUpdatedClass(lastUpdated: number | undefined): string {
 
 <template>
   <ShadCard class="p-6">
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center justify-between mb-4">
       <h2 class="text-xl font-bold text-[#8b4f2b]">我的追蹤清單</h2>
       <div class="flex gap-2">
         <ShadButton
@@ -111,6 +111,13 @@ function getLastUpdatedClass(lastUpdated: number | undefined): string {
           {{ updatingPrices.size > 0 ? '更新中...' : '更新全部價格' }}
         </ShadButton>
       </div>
+    </div>
+
+    <!-- 歷史成交價限制說明 -->
+    <div class="mb-6 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+      <p class="text-sm text-amber-800">
+        ⚠️ 注意：歷史成交價可能受名稱相似的物品影響。例如搜尋「壽喜鍋」時，可能會包含「一箱壽喜鍋」的成交記錄，導致價格不準確。
+      </p>
     </div>
 
     <div v-if="store.trackedItems.length === 0" class="text-center py-12">
