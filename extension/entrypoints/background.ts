@@ -25,7 +25,7 @@ import type {
 // ========== 常量定義 ==========
 
 const ALARM_NAME = 'priceUpdate';
-const WEB_URL = 'https://baconrad.github.io/StarCG-Market-Extension/';
+const WEB_URL = 'https://baconrad.github.io/StarCG-Market-Assistant/';
 
 // ========== Background Entry Point ==========
 
@@ -297,7 +297,7 @@ async function updateSingleItemPrice(
 function initNotificationHandler() {
   chrome.notifications.onClicked.addListener((notificationId) => {
     // 點擊通知後開啟追蹤清單頁面
-    chrome.tabs.create({ url: `${WEB_URL}tracked` });
+    chrome.tabs.create({ url: `${WEB_URL}#/tracked` });
     chrome.notifications.clear(notificationId);
   });
 }

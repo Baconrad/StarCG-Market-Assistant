@@ -4,7 +4,7 @@ import { getStorage } from '@/utils/storage'
 import type { TrackedItem } from '@/types/messages'
 import ShadButton from '@/components/shadcn/Button.vue'
 
-const WEB_URL = 'https://baconrad.github.io/StarCG-Market-Extension/'
+const WEB_URL = 'https://baconrad.github.io/StarCG-Market-Assistant/'
 const trackedItems = ref<TrackedItem[]>([])
 const loading = ref(true)
 
@@ -32,11 +32,11 @@ onMounted(async () => {
 })
 
 function openWebApp(path: string = 'market') {
-  window.open(`${WEB_URL}${path}`, '_blank')
+  window.open(`${WEB_URL}#/${path}`, '_blank')
 }
 
 function searchItem(name: string) {
-  window.open(`${WEB_URL}market?q=${encodeURIComponent(name)}`, '_blank')
+  window.open(`${WEB_URL}#/market?q=${encodeURIComponent(name)}`, '_blank')
 }
 
 function formatPrice(price: number | undefined) {
@@ -58,7 +58,7 @@ function formatPrice(price: number | undefined) {
     <!-- 主要內容區域 -->
     <main class="flex-1 flex flex-col p-4 gap-4">
       <!-- 前往賣場按鈕 -->
-      <ShadButton size="lg" class="w-full" @click="openWebApp('/market')">
+      <ShadButton size="lg" class="w-full" @click="openWebApp('market')">
         <span class="flex items-center justify-center gap-2">
           <span>🛍️</span>
           <span>前往賣場搜尋</span>
@@ -77,7 +77,7 @@ function formatPrice(price: number | undefined) {
           </h2>
           <button
             v-if="trackedItems.length > 0"
-            @click="openWebApp('/tracked')"
+            @click="openWebApp('tracked')"
             class="text-xs text-primary hover:text-primary-dark transition-colors font-medium"
           >
             查看全部 →
@@ -145,7 +145,7 @@ function formatPrice(price: number | undefined) {
               還有 {{ trackedItems.length - 5 }} 個項目...
             </span>
             <button
-              @click="openWebApp('/tracked')"
+              @click="openWebApp('tracked')"
               class="text-xs text-primary hover:text-primary-dark ml-1 font-medium"
             >
               查看全部
