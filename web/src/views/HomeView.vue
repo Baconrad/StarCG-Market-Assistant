@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useMarketStore } from '../stores/market'
 import { fetchAllMarketPages } from '../utils/api'
 import { buildRowsFromApi } from '../utils/columns'
 import { ERROR_MESSAGES } from '../utils/constants'
+
+// Google Analytics gtag 类型聲明
+declare global {
+  function gtag(...args: any[]): void
+}
 
 // Components
 import ShadCard from '../components/shadcn/Card.vue'
@@ -15,6 +20,7 @@ import BountyDialog from '../components/BountyDialog.vue'
 
 const store = useMarketStore()
 const route = useRoute()
+const router = useRouter()
 const q = ref('')
 const nameFilter = ref('')
 const showBountyDialog = ref(false)
@@ -26,15 +32,24 @@ onMounted(() => {
   const queryQ = route.query.q as string
   if (queryQ && queryQ.trim()) {
     q.value = queryQ.trim()
-    doSearch()
+    doSearch(false) // 不更新 URL，因為是從 URL 讀取的
   }
 })
 
-async function doSearch() {
+async function doSearch(updateUrl: boolean = true) {
   const text = q.value.trim()
   if (!text) {
     store.setRows([])
+    // 清空 URL query
+    if (updateUrl) {
+      router.replace({ query: {} })
+    }
     return
+  }
+
+  // 更新 URL query 參數
+  if (updateUrl) {
+    router.replace({ query: { q: text } })
   }
 
   store.setLoading(true)
@@ -44,6 +59,14 @@ async function doSearch() {
     store.setRows(rows)
     // 搜尋後自動填入商品名稱篩選
     nameFilter.value = text
+
+    // 發送 Google Analytics 搜尋事件
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'search', {
+        search_term: text,
+        results_count: rows.length
+      })
+    }
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error)
     alert(`${ERROR_MESSAGES.FETCH_FAILED}：${errorMsg}`)
