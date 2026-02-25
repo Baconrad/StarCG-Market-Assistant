@@ -7,43 +7,26 @@ import type {
   MarketApiResponse,
   MarketHistoryRecord,
 } from '@/types/market';
-
-// 從環境變數讀取擴充功能 ID
-const EXTENSION_ID = import.meta.env.VITE_EXTENSION_ID || 'ooiofmpdcmcjclbbphgkfhcnebpomded';
+import { sendExtensionMessage as sendExtensionMsg } from './extension';
 
 /**
  * 透過 Extension 代理發送 API 請求
  */
 async function sendExtensionMessage(type: string, data: any): Promise<any> {
-  return new Promise((resolve, reject) => {
-    try {
-      // @ts-ignore
-      if (typeof chrome === 'undefined' || !chrome.runtime) {
-        reject(new Error('Extension not available'));
-        return;
-      }
-
-      // @ts-ignore
-      chrome.runtime.sendMessage(EXTENSION_ID, { type, data }, (response: any) => {
-        if (chrome.runtime.lastError) {
-          reject(new Error(chrome.runtime.lastError.message));
-          return;
-        }
-        if (response?.success) {
-          resolve(response.data);
-        } else {
-          reject(new Error(response?.message || 'Unknown error'));
-        }
-      });
-
-      // 設定超時
-      setTimeout(() => {
-        reject(new Error('Extension request timeout'));
-      }, 30000);
-    } catch (error) {
-      reject(error);
-    }
+  const response = await sendExtensionMsg<{ success: boolean; data?: any; message?: string }>({
+    type,
+    data
   });
+  
+  if (response === null) {
+    throw new Error('Extension not available');
+  }
+  
+  if (response?.success) {
+    return response.data;
+  } else {
+    throw new Error(response?.message || 'Unknown error');
+  }
 }
 
 /**
